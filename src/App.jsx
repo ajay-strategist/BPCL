@@ -415,40 +415,28 @@ export default function App() {
     });
   };
 
-  // Download via a real HTTP response carrying Content-Disposition. This is the
-  // most robust method: the server sets the exact filename header, which is the
-  // format download managers / browsers respect best. (A console marker is
-  // included so you can confirm in DevTools that this updated code is running.)
+  // Client-side blob download. Needs no backend, has no upload size limit, and
+  // works on stateless serverless hosting (e.g. Vercel). The browser saves the
+  // file using the anchor's `download` attribute.
   const triggerGetDownload = async (filename, mimeType, blob) => {
     try {
-      console.log('[BPCL download v3] requesting:', filename, mimeType, blob?.size + ' bytes');
-      const base64Data = await blobToBase64(blob);
+      // Ensure the blob carries the right MIME type so the extension is kept.
+      const typedBlob =
+        blob.type === mimeType ? blob : new Blob([blob], { type: mimeType });
 
-      const response = await fetch('/api/store', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename, mimeType, base64Data })
-      });
-      if (!response.ok) {
-        throw new Error(`Failed to store file: ${response.statusText}`);
-      }
-      const { token } = await response.json();
-
-      // Click an anchor WITHOUT a `download` attribute, so the browser relies
-      // solely on the server's `Content-Disposition: attachment; filename=...`
-      // header. This is deliberately different from the previous version (which
-      // set `download=` and produced UUID names): some managed Chrome setups /
-      // download-manager extensions honour the header but ignore the attribute.
-      const downloadUrl = `/api/download-file/${token}/${encodeURIComponent(filename)}`;
+      const url = URL.createObjectURL(typedBlob);
       const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.target = '_self';
+      link.href = url;
+      link.download = filename;
+      link.rel = 'noopener';
       link.style.display = 'none';
       document.body.appendChild(link);
       link.click();
+
       setTimeout(() => {
         if (link.parentNode === document.body) link.remove();
-      }, 1000);
+        URL.revokeObjectURL(url);
+      }, 1500);
     } catch (err) {
       console.error('Download error:', err);
       setError(`Download failed: ${err.message}`);
