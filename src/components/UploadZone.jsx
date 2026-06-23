@@ -19,8 +19,8 @@ export default function UploadZone({ onDataParsed, onError }) {
     if (!file) return;
 
     const fileExt = file.name.split('.').pop().toLowerCase();
-    if (fileExt !== 'csv' && fileExt !== 'xlsx' && fileExt !== 'xls') {
-      onError('Unsupported file type. Please upload a .csv or .xlsx / .xls file.');
+    if (fileExt !== 'xlsx' && fileExt !== 'xls') {
+      onError('Unsupported file type. Please upload an Excel (.xlsx or .xls) file.');
       return;
     }
 
@@ -68,7 +68,7 @@ export default function UploadZone({ onDataParsed, onError }) {
           type="file" 
           ref={fileInputRef}
           style={{ display: 'none' }}
-          accept=".csv, .xlsx, .xls"
+          accept=".xlsx, .xls"
           onChange={handleFileChange}
           disabled={loading}
         />
@@ -84,10 +84,10 @@ export default function UploadZone({ onDataParsed, onError }) {
           )}
         </div>
         <p className="upload-text">
-          {loading ? 'Reading file contents...' : 'Drag & Drop CSV / Excel File'}
+          {loading ? 'Reading file contents...' : 'Drag & Drop Excel File'}
         </p>
         <p className="upload-subtext">
-          or click to browse your files (expects .csv, .xlsx, .xls)
+          or click to browse your files (expects .xlsx, .xls)
         </p>
       </div>
     </div>
